@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
 from transformers import pipeline
-import warnings
 
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+sentiment_pipeline = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base")
 
 def summarize_text(text):
     summary = summarizer(text, max_length=100, min_length=20, do_sample=False)
@@ -53,15 +52,27 @@ async def on_message(message):
         if len(text_to_summarize) > 50:  #minimum length for summarization
             summary = summarize_text(text_to_summarize)
             await message.channel.send(f"Summary: {summary}")
+        elif message.content.lower() == "!summarize":
+            await message.channel.send("GenZ bot can now provide text summaries upon request using an NLP model. Send a message starting with !summarize followed by a long text.")
         else:
             await message.channel.send("Please provide a longer text to summarize.")
 
     if len(message.content) > 50:
         sentiment = analyze_sentiment(message.content)
-        if sentiment == "NEGATIVE":
-            await message.channel.send("Bro wut u doin? 😔")
-        elif sentiment == "POSITIVE":
-            await message.channel.send("Damn u cooked 😄")
+        if sentiment == "joy":
+            await message.channel.send("Demn!")
+        elif sentiment == "sadness":
+            await message.channel.send("Sadge, sorry to hear that")
+        elif sentiment == "anger":
+            await message.channel.send("Bruh kalm down")
+        elif sentiment == "fear":
+            await message.channel.send("everythings gonna be ight real soon")
+        elif sentiment == "disgust":
+            await message.channel.send("tf fr")
+        elif sentiment == "surprise":
+            await message.channel.send("sheesh that's dope")
+        elif sentiment == "neutral":
+            await message.channel.send("i see")
 
     if "sadge" in message.content.lower() or "sad" in message.content.lower() or "sed" in message.content.lower():
         await message.channel.send("big L") # big L = big loss
@@ -99,6 +110,6 @@ async def on_message(message):
         await message.channel.send("no u")
     if "legit" in message.content.lower() or "no cap" in message.content.lower():
         await message.channel.send("bet") # bet = agreed
-        
+
     await bot.process_commands(message)
 bot.run("token")
