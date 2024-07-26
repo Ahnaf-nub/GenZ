@@ -27,5 +27,5 @@ To get started with GenZ Bot, follow these steps:
    ```
 3. Run the bot:
    ```bash
-   python3 bot.py
+   python3 dc.py
    ```
