@@ -14,7 +14,7 @@ GenZ Bot automatically scans messages for explicit links and immediately bans us
 GenZ Bot replies to users in a way that mimics the speech patterns and slang of Generation Z.
 
 ## Installation and Setup
-
+### You have to create your own bot token first from discord developers portal.
 To get started with GenZ Bot, follow these steps:
 
 1. Clone the repository:
