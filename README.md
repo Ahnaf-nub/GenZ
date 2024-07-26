@@ -1,6 +1,6 @@
 # GenZ Bot
 
-GenZ Bot is a fun and interactive Discord bot designed to engage with users in a true GenZ fashion. Whether you're looking to quickly summarize lengthy texts or keep your server safe from explicit content, GenZ Bot has got you covered.
+GenZ Bot is a fun and interactive Discord bot designed to engage with users in a true GenZ fashion. Whether you're looking to quickly summarize lengthy texts or keep your server safe from explicit content, GenZ Bot has got you covered. models from HuggingFace has been used for summarizer and also to analyze Sentiment of texts!
 
 ## Key Features
 
@@ -11,7 +11,7 @@ Using the `!summarize [text]` command, GenZ Bot can provide concise summaries of
 GenZ Bot automatically scans messages for explicit links and immediately bans users who post them, keeping your server safe and clean.
 
 ### GenZ Style Replies
-GenZ Bot replies to users in a way that mimics the speech patterns and slang of Generation Z, adding a fun and relatable touch to all interactions.
+GenZ Bot replies to users in a way that mimics the speech patterns and slang of Generation Z.
 
 ## Installation and Setup
 
