@@ -8,12 +8,14 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv('token')
+API_KEY = os.getenv('gemini')
 
 app = Flask(__name__)
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-sentiment_pipeline = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base")
+GOOGLE_API_KEY = API_KEY
+genai.configure(api_key=GOOGLE_API_KEY)
 
+model = genai.GenerativeModel('gemini-1.5-flash')
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
@@ -28,12 +30,11 @@ def run_flask():
     app.run(host='0.0.0.0', port=5000)
 
 def summarize_text(text):
-    summary = summarizer(text, max_length=100, min_length=20, do_sample=False)
-    return summary[0]['summary_text']
+    summary = model.generate_content(f"Summarize {text} within a maximum length of 100 and a minimum length of 20.")
+    return summary
 
 def analyze_sentiment(text):
-    result = sentiment_pipeline(text)
-    sentiment = result[0]['label']
+    sentiment = model.generate_content(f"What is the sentiment of {text} within (joy, sadness, anger, fear, disgust, surprise, neutral)?")
     return sentiment
 
 def is_explicit(url):
@@ -42,17 +43,17 @@ def is_explicit(url):
 
 @bot.event
 async def on_message(message):
-    #print(f"Message from {message.author}: {message.content}")
+    print(f"Message from {message.author}: {message.content}")
 
     if message.author == bot.user:
-        #print("Message from bot itself, ignoring.")
+        print("Message from bot itself, ignoring.")
         return
 
     # Check for explicit links
     for word in message.content.split():
         if word.startswith("http://") or word.startswith("https://") or word.startswith("www."):
             if is_explicit(word):
-                #print(f"Explicit link found: {word}")
+                print(f"Explicit link found: {word}")
                 await message.delete()
                 await message.channel.send(f"{message.author.mention}, you have been fanum taxed for posting explicit content.") # fanum taxxed = banned
                 return
@@ -61,14 +62,14 @@ async def on_message(message):
             text_to_summarize = message.content[len("!summarize "):]
             if len(text_to_summarize) > 50:  #minimum length for summarization
                 summary = summarize_text(text_to_summarize)
-                await message.channel.send(f"Summary: {summary}")
+                await message.channel.send(f"Summary: {summary.text}")
             elif message.content.lower() == "!summarize":
                 await message.channel.send("GenZ bot can now provide text summaries upon request using an NLP model. Send a message starting with !summarize followed by a long text.")
             else:
                 await message.channel.send("Please provide a longer text to summarize.")
 
-        if len(message.content) > 50:
-            sentiment = analyze_sentiment(message.content)
+        if len(message.content) > 40:
+            sentiment = analyze_sentiment(message.content).text
             if sentiment == "joy":
                 await message.channel.send("Demn!")
             elif sentiment == "sadness":
@@ -102,7 +103,7 @@ async def on_message(message):
             await message.channel.send("💪")
         if "sigh" in message.content.lower() or "sighh" in message.content.lower() or "sighhh" in message.content.lower():
             await message.channel.send("😔")
-        if "wtf" in message.content.lower():
+        if "tf" in message.content.lower() or "wtf" in message.content.lower():
             await message.channel.send("lmao")
         if "huh" in message.content.lower() or "wut" in message.content.lower() or "what" in message.content.lower():
             await message.channel.send(f"{message.author.mention}, duh")
@@ -110,6 +111,8 @@ async def on_message(message):
             await message.channel.send("fr") # fr = for real
         if "ikr" in message.content.lower():
             await message.channel.send("us")
+        if "same" in message.content.lower() or "sem" in message.content.lower():
+            await message.channel.send("no cap") # no cap = no lie
         if "no cap" in message.content.lower():
             await message.channel.send("fax")
         if "cringe" in message.content.lower():
@@ -122,7 +125,7 @@ async def on_message(message):
         await bot.process_commands(message)
 
 def run_discord_bot():
-    bot.run(TOKEN) 
+    bot.run(TOKEN)
 if __name__ == '__main__':
     flask_thread = Thread(target=run_flask)
     flask_thread.start()
