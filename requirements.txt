@@ -1,3 +1,2 @@
-﻿Flask
 discord
-google-generativeai
+requests
