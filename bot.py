@@ -5,7 +5,7 @@ import requests
 # Define API URLs and headers
 sentiment_API = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base"
 summarizer_API = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-headers = {"Authorization": "Bearer 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"}
+headers = {"Authorization": "Bearer api_key"}
 
 # Functions to query APIs
 def query_summarize(payload):
@@ -33,7 +33,11 @@ def summarize_text(text):
 # Function to analyze sentiment
 def analyze_sentiment(text: str):
     sentiment = query_sentiment({"inputs": text})
-    return sentiment[0]['label']
+    try:
+        # Access the first dictionary in the first list and get the label
+        return sentiment[0][0]['label']
+    except (KeyError, IndexError, TypeError) as e:
+        return "unknown"
 
 # Function to check for explicit links
 def is_explicit(url):
@@ -42,14 +46,12 @@ def is_explicit(url):
 
 # Summarize command
 @bot.command()
-async def summarize(message, text: str):
+async def summarize(ctx, *, text: str):
     if len(text) > 50:
         summary = summarize_text(text)
-        await message.channel.send(f"Summary: {summary}")
-    elif text.content.lower() == "!summarize":
-        await message.channel.send("GenZ bot can now provide text summaries upon request using an NLP model. Send a message starting with !summarize followed by a long text.")
+        await ctx.send(f"Summary: {summary}")
     else:
-        await message.channel.send("Please provide a longer text to summarize.")
+        await ctx.send("Please provide a longer text to summarize.")
 
 @bot.event
 async def on_message(message):
@@ -63,59 +65,60 @@ async def on_message(message):
             await message.channel.send(f"{message.author.mention}, you have been fanum taxed for posting explicit content.")
             return
 
-    # Analyze sentiment for messages longer than 100 characters
-    if len(message.content) > 100:
-        sentiment = analyze_sentiment(message.content)
-        if sentiment == "joy":
-            await message.channel.send("Demn!")
-        elif sentiment == "sadness":
-            await message.channel.send("Sadge, sorry to hear that")
-        elif sentiment == "anger":
-            await message.channel.send("Bruh kalm down")
-        elif sentiment == "fear":
-            await message.channel.send("everythings gonna be ight real soon")
-        elif sentiment == "disgust":
-            await message.channel.send("tf fr")
-        elif sentiment == "surprise":
-            await message.channel.send("sheesh that's dope")
-        elif sentiment == "neutral":
-            await message.channel.send("i see")
+    # Skip sentiment analysis if the message is a command
+    if not message.content.startswith("!"):
+        if len(message.content) > 50:
+            sentiment = analyze_sentiment(message.content)
+            if sentiment == "joy":
+                await message.channel.send("Demn!")
+            elif sentiment == "sadness":
+                await message.channel.send("Sadge, sorry to hear that")
+            elif sentiment == "anger":
+                await message.channel.send("Bruh kalm down")
+            elif sentiment == "fear":
+                await message.channel.send("everythings gonna be ight real soon")
+            elif sentiment == "disgust":
+                await message.channel.send("tf fr")
+            elif sentiment == "surprise":
+                await message.channel.send("sheesh that's dope")
+            elif sentiment == "neutral":
+                await message.channel.send("i see")
 
-    # Respond to specific keywords
-    if "sadge" in message.content.lower() or "sad" in message.content.lower() or "sed" in message.content.lower():
-        await message.channel.send("big L")
-    if "damn" in message.content.lower() or "demn" in message.content.lower() or "dang" in message.content.lower() or "deng" in message.content.lower():
-        await message.channel.send("big W")
-    if "lol" in message.content.lower() or "lmao" in message.content.lower() or "lmfao" in message.content.lower() or "xd" in message.content.lower():
-        await message.channel.send("so skibidi")
-    if "bruh" in message.content.lower() or "bro" in message.content.lower() or "ain't no way" in message.content.lower():
-        await message.channel.send("bro's gotta cook")
-    if "legit" in message.content.lower():
-        await message.channel.send("smh")
-    if "lit" in message.content.lower() or "fire" in message.content.lower() or "dope" in message.content.lower() or "sheesh" in message.content.lower():
-        await message.channel.send("🔥")
-    if "savage" in message.content.lower() or "savage af" in message.content.lower():
-        await message.channel.send("ikr")
-    if "flex" in message.content.lower() or "flexing" in message.content.lower():
-        await message.channel.send("💪")
-    if "sigh" in message.content.lower() or "sighh" in message.content.lower() or "sighhh" in message.content.lower():
-        await message.channel.send("😔")
-    if "wtf" in message.content.lower():
-        await message.channel.send("lmao")
-    if "huh" in message.content.lower() or "wut" in message.content.lower() or "what" in message.content.lower():
-        await message.channel.send(f"{message.author.mention}, duh")
-    if "ngl" in message.content.lower() or "let him cook" in message.content.lower():
-        await message.channel.send("fr")
-    if "ikr" in message.content.lower():
-        await message.channel.send("us")
-    if "no cap" in message.content.lower():
-        await message.channel.send("fax")
-    if "cringe" in message.content.lower():
-        await message.channel.send("fax fr")
-    if "why are u gay" in message.content.lower() or "why u gay" in message.content.lower() or "gay" in message.content.lower():
-        await message.channel.send("no u")
-    if "legit" in message.content.lower() or "no cap" in message.content.lower():
-        await message.channel.send("bet")
+    if not message.content.startswith("!"):
+        if "sadge" in message.content.lower() or "sad" in message.content.lower() or "sed" in message.content.lower():
+            await message.channel.send("big L")
+        if "damn" in message.content.lower() or "demn" in message.content.lower() or "dang" in message.content.lower() or "deng" in message.content.lower():
+            await message.channel.send("big W")
+        if "lol" in message.content.lower() or "lmao" in message.content.lower() or "lmfao" in message.content.lower() or "xd" in message.content.lower():
+            await message.channel.send("so skibidi")
+        if "bruh" in message.content.lower() or "bro" in message.content.lower() or "ain't no way" in message.content.lower():
+            await message.channel.send("bro's gotta cook")
+        if "legit" in message.content.lower():
+            await message.channel.send("smh")
+        if "lit" in message.content.lower() or "fire" in message.content.lower() or "dope" in message.content.lower() or "sheesh" in message.content.lower():
+            await message.channel.send("🔥")
+        if "savage" in message.content.lower() or "savage af" in message.content.lower():
+            await message.channel.send("ikr")
+        if "flex" in message.content.lower() or "flexing" in message.content.lower():
+            await message.channel.send("💪")
+        if "sigh" in message.content.lower() or "sighh" in message.content.lower() or "sighhh" in message.content.lower():
+            await message.channel.send("😔")
+        if "wtf" in message.content.lower():
+            await message.channel.send("lmao")
+        if "huh" in message.content.lower() or "wut" in message.content.lower() or "what" in message.content.lower():
+            await message.channel.send(f"{message.author.mention}, duh")
+        if "ngl" in message.content.lower() or "let him cook" in message.content.lower():
+            await message.channel.send("fr")
+        if "ikr" in message.content.lower():
+            await message.channel.send("fr")
+        if "no cap" in message.content.lower():
+            await message.channel.send("fax")
+        if "cringe" in message.content.lower():
+            await message.channel.send("fax fr")
+        if "why are u gay" in message.content.lower() or "why u gay" in message.content.lower() or "gay" in message.content.lower():
+            await message.channel.send("no u")
+        if "legit" in message.content.lower() or "no cap" in message.content.lower():
+            await message.channel.send("bet")
 
     await bot.process_commands(message)
 bot.run("")
