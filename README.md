@@ -26,6 +26,7 @@ To get started with GenZ Bot, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
+3. You have to replace "Bearer api_key" with your own hugging face api.
 3. Run the bot:
    ```bash
    python3 dc.py
