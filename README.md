@@ -3,7 +3,9 @@
 GenZ Bot is a fun and interactive Discord bot designed to engage with users in a true GenZ fashion. Whether you're looking to quickly summarize lengthy texts or keep your server safe from explicit content, GenZ Bot has got you covered. models from HuggingFace has been used for summarizer and also to analyze Sentiment of texts!
 Add to your server: `https://discord.com/oauth2/authorize?client_id=1262376457796059199`
 
-## Key Features
+![Screenshot 2024-08-31 225348](https://github.com/user-attachments/assets/a652b11b-2f0b-467b-a0e8-ae7317470acc)
+![Screenshot 2024-08-31 225410](https://github.com/user-attachments/assets/9ab0f43e-b7f5-4996-885d-6e5fc0dcd45c)
+## Key Features:
 
 ### Summarizer
 Using the `!summarize [text]` command, GenZ Bot can provide concise summaries of lengthy texts, making it easier for users to get the gist of any message without having to read through the whole of text.
