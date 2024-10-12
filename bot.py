@@ -5,16 +5,26 @@ import requests
 # Define API URLs and headers
 sentiment_API = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base"
 summarizer_API = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-headers = {"Authorization": "Bearer api_key"}
+headers = {"Authorization": "Bearer api_key"}  # Replace 'api_key' with your actual HuggingFace API key
 
 # Functions to query APIs
 def query_summarize(payload):
-    response = requests.post(summarizer_API, headers=headers, json=payload)
-    return response.json()
+    try:
+        response = requests.post(summarizer_API, headers=headers, json=payload)
+        response.raise_for_status()  # Check for HTTP errors
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error during summarization: {e}")
+        return None
 
 def query_sentiment(payload):
-    response = requests.post(sentiment_API, headers=headers, json=payload)
-    return response.json()
+    try:
+        response = requests.post(sentiment_API, headers=headers, json=payload)
+        response.raise_for_status()  # Check for HTTP errors
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error during sentiment analysis: {e}")
+        return None
 
 # Discord bot setup
 intents = discord.Intents.default()
@@ -27,17 +37,21 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Function to summarize text
 def summarize_text(text):
-    summary = query_summarize({"inputs": text})
-    return summary[0]['summary_text']
+    summary_response = query_summarize({"inputs": text})
+    if summary_response:
+        return summary_response[0].get('summary_text', "No summary available.")
+    else:
+        return "Error occurred while summarizing."
 
 # Function to analyze sentiment
 def analyze_sentiment(text: str):
-    sentiment = query_sentiment({"inputs": text})
-    try:
-        # Access the first dictionary in the first list and get the label
-        return sentiment[0][0]['label']
-    except (KeyError, IndexError, TypeError) as e:
-        return "unknown"
+    sentiment_response = query_sentiment({"inputs": text})
+    if sentiment_response:
+        try:
+            return sentiment_response[0][0]['label']
+        except (KeyError, IndexError, TypeError):
+            return "unknown"
+    return "unknown"
 
 # Function to check for explicit links
 def is_explicit(url):
@@ -53,6 +67,7 @@ async def summarize(ctx, *, text: str):
     else:
         await ctx.send("Please provide a longer text to summarize.")
 
+# Message handling
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -76,49 +91,63 @@ async def on_message(message):
             elif sentiment == "anger":
                 await message.channel.send("Bruh kalm down")
             elif sentiment == "fear":
-                await message.channel.send("everythings gonna be ight real soon")
+                await message.channel.send("Everything's gonna be alright real soon")
             elif sentiment == "disgust":
                 await message.channel.send("tf fr")
             elif sentiment == "surprise":
-                await message.channel.send("sheesh that's dope")
+                await message.channel.send("Sheesh, that's dope!")
             elif sentiment == "neutral":
-                await message.channel.send("i see")
+                await message.channel.send("I see.")
 
-    if not message.content.startswith("!"):
-        if "sadge" in message.content.lower() or "sad" in message.content.lower() or "sed" in message.content.lower():
-            await message.channel.send("big L")
-        if "damn" in message.content.lower() or "demn" in message.content.lower() or "dang" in message.content.lower() or "deng" in message.content.lower():
-            await message.channel.send("big W")
-        if "lol" in message.content.lower() or "lmao" in message.content.lower() or "lmfao" in message.content.lower() or "xd" in message.content.lower():
-            await message.channel.send("so skibidi")
-        if "bruh" in message.content.lower() or "bro" in message.content.lower() or "ain't no way" in message.content.lower():
-            await message.channel.send("bro's gotta cook")
-        if "legit" in message.content.lower():
-            await message.channel.send("smh")
-        if "lit" in message.content.lower() or "fire" in message.content.lower() or "dope" in message.content.lower() or "sheesh" in message.content.lower():
-            await message.channel.send("🔥")
-        if "savage" in message.content.lower() or "savage af" in message.content.lower():
-            await message.channel.send("ikr")
-        if "flex" in message.content.lower() or "flexing" in message.content.lower():
-            await message.channel.send("💪")
-        if "sigh" in message.content.lower() or "sighh" in message.content.lower() or "sighhh" in message.content.lower():
-            await message.channel.send("😔")
-        if "wtf" in message.content.lower():
-            await message.channel.send("lmao")
-        if "huh" in message.content.lower() or "wut" in message.content.lower() or "what" in message.content.lower():
-            await message.channel.send(f"{message.author.mention}, duh")
-        if "ngl" in message.content.lower() or "let him cook" in message.content.lower():
-            await message.channel.send("fr")
-        if "ikr" in message.content.lower():
-            await message.channel.send("fr")
-        if "no cap" in message.content.lower():
-            await message.channel.send("fax")
-        if "cringe" in message.content.lower():
-            await message.channel.send("fax fr")
-        if "why are u gay" in message.content.lower() or "why u gay" in message.content.lower() or "gay" in message.content.lower():
-            await message.channel.send("no u")
-        if "legit" in message.content.lower() or "no cap" in message.content.lower():
-            await message.channel.send("bet")
+        # Check for slang words and phrases
+        lower_content = message.content.lower()
+        response_map = {
+            "sadge": "big L",
+            "sad": "big L",
+            "sed": "big L",
+            "damn": "big W",
+            "demn": "big W",
+            "dang": "big W",
+            "deng": "big W",
+            "lol": "so skibidi",
+            "lmao": "so skibidi",
+            "lmfao": "so skibidi",
+            "xd": "so skibidi",
+            "bruh": "bro's gotta cook",
+            "bro": "bro's gotta cook",
+            "ain't no way": "bro's gotta cook",
+            "legit": "smh",
+            "lit": "🔥",
+            "fire": "🔥",
+            "dope": "🔥",
+            "sheesh": "🔥",
+            "savage": "ikr",
+            "savage af": "ikr",
+            "flex": "💪",
+            "flexing": "💪",
+            "sigh": "😔",
+            "sighh": "😔",
+            "sighhh": "😔",
+            "wtf": "lmao",
+            "huh": f"{message.author.mention}, duh",
+            "wut": f"{message.author.mention}, duh",
+            "what": f"{message.author.mention}, duh",
+            "ngl": "fr",
+            "let him cook": "fr",
+            "ikr": "fr",
+            "no cap": "fax",
+            "cringe": "fax fr",
+            "why are u gay": "no u",
+            "why u gay": "no u",
+            "gay": "no u",
+        }
+
+        for key, response in response_map.items():
+            if key in lower_content:
+                await message.channel.send(response)
+                break
 
     await bot.process_commands(message)
-bot.run("")
+
+# Make sure to replace the token with your actual bot token securely
+bot.run("your_token_here")
